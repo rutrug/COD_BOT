@@ -93,6 +93,9 @@ def launchGame():
     EXECUTION_START = datetime.datetime.now()
 
     os.startfile(CUSTOM_GAME_PATH)
+    time.sleep(2)
+
+    pyautogui.press('F11')
 
     time.sleep(CUSTOM_LAUNCH_SLEEPTIME)
 
@@ -104,11 +107,7 @@ def launchGame():
         except pyautogui.ImageNotFoundException:
             break
 
-
-    pyautogui.press('F11')
-
     time.sleep(6)
-    doWork()
 
 def doWork():
 
@@ -206,7 +205,7 @@ def tryHelpAlliance():
     click(CITY_BUTTON[0], CITY_BUTTON[1], 2)
 
 def trainTroops():
-    global SWORDSMAN_CAMP
+
     handleTrainingInBuilding(SWORDSMAN_CAMP[0], SWORDSMAN_CAMP[1], "COD_SWORDSMEN_TRAIN.png")
     handleTrainingInBuilding(KNIGHT_CAMP[0], KNIGHT_CAMP[1],"COD_KNIGHT_TRAIN.png", 1)
     handleTrainingInBuilding(ABBEY[0], ABBEY[1],"COD_ABBEY_TRAIN.png")
@@ -715,31 +714,28 @@ def loadConfigAndRun():
     if returnVal == 1: # we can afk bit, life's good
         minimizeGame()
     
-def loadConfigAndWait():
-    loadMeasurementsFromFile()
-    printMirkoBotHead()
-    returnVal = mainGameLoop()
-
-
-    if returnVal == 0: # reset req
-        endGame()
-    if returnVal == 1: # we can afk bit, life's good
-        minimizeGame()
-        time.sleep(600)
+# def loadConfigAndWait():
+#     loadMeasurementsFromFile()
+#     printMirkoBotHead()
+#     returnVal = mainGameLoop()
+#
+#
+#     if returnVal == 0: # reset req
+#         endGame()
+#     if returnVal == 1: # we can afk bit, life's good
+#         minimizeGame()
+#         time.sleep(600)
 
 def mainGameLoop():
 
     errorCounter = 0
 
     # loop counter for safety reasons
-
-    while(errorCounter < 3):
-        workReturnVal = doWork()
-
-        if workReturnVal == 0: # we need to restart the game
-            return 0
-        if workReturnVal == 1:
-            break # one loop of work is enough for now?
+    workReturnVal = doWork()
+    if workReturnVal == 0: # we need to restart the game
+        return 0
+    if workReturnVal == 1:
+        return 1
 
     return 1
 
