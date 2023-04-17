@@ -110,25 +110,41 @@ def launchGame():
     time.sleep(6)
 
 def doWork():
+    global MODULE_ALLIANCE_BUILDING
+    global MODULE_TRAIN_TROOPS
+    global MODULE_HELP_ALLIANCE
+    global MODULE_SCOUT
+    global MODULE_GATHERING
 
     err = 0
+    err += areWeInCity()
 
-    if err <= 0:
+    if err <= 0 and MODULE_ALLIANCE_BUILDING == 1:
         err += hitAllianceBuilding()
+        print(getCurrentTimestamp() + " > Done hitting help on alliance buildiung. Error: " + str(err))
+        err += areWeInCity()
 
-    if err <= 0:
+    if err <= 0 and MODULE_TRAIN_TROOPS == 1:
         err += trainTroops()
+        print(getCurrentTimestamp() + " > Done training troops. Error: " + str(err))
+        err += areWeInCity()
 
-    #if err <= 0:
-    #    err += tryHelpAlliance()
+    if err <= 0 and MODULE_HELP_ALLIANCE == 1:
+        err += tryHelpAlliance()
+        print(getCurrentTimestamp() + " > Done helping alliance. Error: " + str(err))
+        err += areWeInCity()
 
-    #if err <= 0:
-    #    err += hitScoutBuilding()
+    if err <= 0 and MODULE_SCOUT == 1:
+        err += hitScoutBuilding()
+        print(getCurrentTimestamp() + " > Done using scout building. Error: " + str(err))
+        err += areWeInCity()
 
-    if err <= 0:
+    if err <= 0 and MODULE_GATHERING == 1:
         err += gatherResources()
+        print(getCurrentTimestamp() + " > Done gathering resources. Error: " + str(err))
+        err += areWeInCity()
 
-    time.sleep(2)
+    scalableSleep(2)
 
     if err >= 1:
         return 0
@@ -206,14 +222,14 @@ def tryHelpAlliance():
 
 def trainTroops():
 
-    handleTrainingInBuilding(SWORDSMAN_CAMP[0], SWORDSMAN_CAMP[1], "COD_SWORDSMEN_TRAIN.png")
-    handleTrainingInBuilding(KNIGHT_CAMP[0], KNIGHT_CAMP[1],"COD_KNIGHT_TRAIN.png", 1)
-    handleTrainingInBuilding(ABBEY[0], ABBEY[1],"COD_ABBEY_TRAIN.png")
-    handleTrainingInBuilding(BALLISTA_FACTORY[0], BALLISTA_FACTORY[1],"COD_BALLISTA_TRAIN.png")
+    handleTrainingInBuilding("Swordsmen", SWORDSMAN_CAMP[0], SWORDSMAN_CAMP[1], "COD_SWORDSMEN_TRAIN.png")
+    handleTrainingInBuilding("Knights", KNIGHT_CAMP[0], KNIGHT_CAMP[1],"COD_KNIGHT_TRAIN.png", 1)
+    handleTrainingInBuilding("Vestals", ABBEY[0], ABBEY[1],"COD_ABBEY_TRAIN.png")
+    handleTrainingInBuilding("Ballistas", BALLISTA_FACTORY[0], BALLISTA_FACTORY[1],"COD_BALLISTA_TRAIN.png")
 
     return 0
 
-def handleTrainingInBuilding(posX, posY, buildingTrain, lockBuildTier = -1):
+def handleTrainingInBuilding(name, posX, posY, buildingTrain, lockBuildTier = -1):
 
     click(posX, posY, 0.25)
     click(posX, posY, 0.25)
@@ -244,12 +260,15 @@ def handleTrainingInBuilding(posX, posY, buildingTrain, lockBuildTier = -1):
                     loc = pyautogui.locateOnScreen("COD_TRAIN_UPGRADE.png", confidence=0.75)
                     # We do have upgrades for this tier
                     locPoint = pyautogui.center(loc)
+
                     click(locPoint[0], locPoint[1], 0.25)
 
                     try:
                         loc = pyautogui.locateOnScreen("COD_PROMOTE.png", confidence=0.75)
                         locPoint = pyautogui.center(loc)
                         click(locPoint[0], locPoint[1], 1)
+
+                        print(getCurrentTimestamp() + " Upgrading troops " + colored(name, 'yellow'))
                         # Success upgrade!
                         return 1
                     except pyautogui.ImageNotFoundException:
@@ -258,7 +277,7 @@ def handleTrainingInBuilding(posX, posY, buildingTrain, lockBuildTier = -1):
                     break
                 except pyautogui.ImageNotFoundException:
                     # We don't have any units for upgrade on this tier
-                    time.sleep(0)
+                    scalableSleep(0)
 
                 activeTier += 1
 
@@ -276,11 +295,12 @@ def handleTrainingInBuilding(posX, posY, buildingTrain, lockBuildTier = -1):
                     # We can train this!
                     locPoint = pyautogui.center(loc)
                     click(locPoint[0], locPoint[1], 1)
+                    print(getCurrentTimestamp() + " Training troops " + colored(name, 'yellow'))
                     return 1
 
                 except pyautogui.ImageNotFoundException:
                     # Such unit is not available
-                    time.sleep(0)
+                    scalableSleep(0)
                 tierCounter += 1
 
         if lockBuildTier > 0:
@@ -296,7 +316,7 @@ def handleTrainingInBuilding(posX, posY, buildingTrain, lockBuildTier = -1):
 
             except pyautogui.ImageNotFoundException:
                 # Such unit is not available
-                time.sleep(0)
+                scalableSleep(0)
 
         click(SAFE_CITY_GOBACK[0], SAFE_CITY_GOBACK[1], 1)
         return 0
@@ -330,10 +350,10 @@ def gatherResources():
             print("No free march available")
 
         if priorityFound == 0 and returnVal != 2:
-            time.sleep(5)
+            scalableSleep(5)
             returnVal = tryFindResource(0)
             if returnVal == 0:
-                time.sleep(0)
+                scalableSleep(0)
             if returnVal == 1:
                 found = 1
 
@@ -445,13 +465,13 @@ def tryFindResource(priority):
         locPoint = pyautogui.center(loc)
         click(locPoint[0], locPoint[1], 1)
 
-        print(getCurrentTimestamp() + " Gathering resource! " + " priority " + str(priority) + " resource " + colored(resourceName, 'yellow'))
+        print(getCurrentTimestamp() + " > Gathering resource! " + " priority " + str(priority) + " resource " + colored(resourceName, 'yellow'))
         found = 1
-        time.sleep(1)
+        scalableSleep(1)
         return 1
 
     except pyautogui.ImageNotFoundException:
-        time.sleep(0)
+        scalableSleep(0)
         click(CITY_BUTTON[0], CITY_BUTTON[1], 1)
         return 2
         # no march ready
@@ -460,6 +480,7 @@ def tryFindResource(priority):
 def hitScoutBuilding():
 
     while 1:
+        scalableSleep(2)
         click(SCOUT_BUILDING[0], SCOUT_BUILDING[1], 0.5)
         click(SCOUT_BUTTON[0], SCOUT_BUTTON[1], 0.5)
 
@@ -479,10 +500,13 @@ def hitScoutBuilding():
 
             # we are sending scouterino
             click(CITY_BUTTON[0], CITY_BUTTON[1], 3)
+            print(getCurrentTimestamp() + " > Sending scout!")
             continue
 
         except pyautogui.ImageNotFoundException:
-            # NO FREE SCOUT, GO CHECK OTHER
+            click(SAFE_CITY_GOBACK[0], SAFE_CITY_GOBACK[1], 1)
+            return 0
+            #NO FREE SCOUT, GO CHECK OTHER
             try:
                 loc = pyautogui.locateOnScreen('COD_OTHER.png', confidence=0.75)
                 locPoint = pyautogui.center(loc)
@@ -501,9 +525,9 @@ def hitScoutBuilding():
 
                 while 1:
 
-                    time.sleep(2)
+                    scalableSleep(2)
                     click(CENTER_OF_SCREEN[0], CENTER_OF_SCREEN[1], 2)
-                    time.sleep(2)
+                    scalableSleep(2)
 
                     try:
                         print("GO gound")
@@ -525,7 +549,7 @@ def hitScoutBuilding():
                             click(locPoint[0], locPoint[1], 1)
                             found = 1
                         except pyautogui.ImageNotFoundException:
-                            time.sleep(0)
+                            scalableSleep(0)
 
                         try:
                             loc = pyautogui.locateOnScreen('COD_RECRUIT.png', confidence=0.75)
@@ -534,55 +558,55 @@ def hitScoutBuilding():
                             click(locPoint[0], locPoint[1], 1)
                             found = 1
                         except pyautogui.ImageNotFoundException:
-                            time.sleep(0)
+                            scalableSleep(0)
 
-                        try: # DUNGEOOOOOOOON
-                            loc = pyautogui.locateOnScreen('COD_VISIT_DUNG.png', confidence=0.6)
-                            locPoint = pyautogui.center(loc)
-                            print("visit dung found")
-                            click(locPoint[0], locPoint[1], 0.5)
-                            time.sleep(1)
-
-                            loc = pyautogui.locateOnScreen('COD_ROLLDOWN.png', confidence=0.6)
-                            locPoint = pyautogui.center(loc)
-                            print("rolldown found")
-                            click(locPoint[0], locPoint[1], 0.5)
-
-                            loc = pyautogui.locateOnScreen('COD_OPTION.png', confidence=0.7)
-                            locPoint = pyautogui.center(loc)
-                            print("option found")
-                            click(locPoint[0], locPoint[1], 0.5)
-
-                            loc = pyautogui.locateOnScreen('COD_OPTION.png', confidence=0.7)
-                            locPoint = pyautogui.center(loc)
-                            print("option found")
-                            click(locPoint[0], locPoint[1], 0.5)
-
-                            loc = pyautogui.locateOnScreen('COD_CLAIMCHEST.png', confidence=0.7)
-                            locPoint = pyautogui.center(loc)
-                            print("claim found")
-                            click(locPoint[0], locPoint[1], 1)
-
-                            time.sleep(10)
-
-                            loc = pyautogui.locateOnScreen('COD_EYE.png', confidence=0.7)
-                            locPoint = pyautogui.center(loc)
-                            print("claim found")
-                            click(locPoint[0], locPoint[1], 1)
-
-                            found = 1
+                        # try: # DUNGEOOOOOOOON
+                            # loc = pyautogui.locateOnScreen('COD_VISIT_DUNG.png', confidence=0.6)
+                            # locPoint = pyautogui.center(loc)
+                            # print("visit dung found")
+                            # click(locPoint[0], locPoint[1], 0.5)
+                            # scalableSleep(1)
+                            #
+                            # loc = pyautogui.locateOnScreen('COD_ROLLDOWN.png', confidence=0.6)
+                            # locPoint = pyautogui.center(loc)
+                            # print("rolldown found")
+                            # click(locPoint[0], locPoint[1], 0.5)
+                            #
+                            # loc = pyautogui.locateOnScreen('COD_OPTION.png', confidence=0.7)
+                            # locPoint = pyautogui.center(loc)
+                            # print("option found")
+                            # click(locPoint[0], locPoint[1], 0.5)
+                            #
+                            # loc = pyautogui.locateOnScreen('COD_OPTION.png', confidence=0.7)
+                            # locPoint = pyautogui.center(loc)
+                            # print("option found")
+                            # click(locPoint[0], locPoint[1], 0.5)
+                            #
+                            # loc = pyautogui.locateOnScreen('COD_CLAIMCHEST.png', confidence=0.7)
+                            # locPoint = pyautogui.center(loc)
+                            # print("claim found")
+                            # click(locPoint[0], locPoint[1], 1)
+                            #
+                            # scalableSleep(10)
+                            #
+                            # loc = pyautogui.locateOnScreen('COD_EYE.png', confidence=0.7)
+                            # locPoint = pyautogui.center(loc)
+                            # print("claim found")
+                            # click(locPoint[0], locPoint[1], 1)
+                            #
+                            # found = 1
 
                             # DUNGEON END
 
-                        except pyautogui.ImageNotFoundException:
-                            time.sleep(0)
+                        # except pyautogui.ImageNotFoundException:
+                        #     scalableSleep(0)
 
                         if found == 0:
                             print("break, recruit or claim not found")
                             break
 
 
-                    time.sleep(1)
+                    scalableSleep(1)
 
                     try:
                         loc = pyautogui.locateOnScreen('COD_BUTTON_GO.png', confidence=0.6)
@@ -597,9 +621,22 @@ def hitScoutBuilding():
 
             except pyautogui.ImageNotFoundException:
                 click(CITY_BUTTON[0], CITY_BUTTON[1], 1)
-                time.sleep(2)
+                scalableSleep(2)
                 return 0
+
                 # no other claimable
+
+def areWeInCity():
+    scalableSleep(1)
+    try:
+        loc = pyautogui.locateOnScreen('COD_SHOWMAP.png', confidence=0.7)
+        return 0
+    except pyautogui.ImageNotFoundException:
+        print(getCurrentTimestamp() + colored(" > City check failed!", 'yellow'))
+        return 1
+
+def scalableSleep(len):
+    time.sleep(len * CLICK_TIME_MULTIPLIER)
 
 def click(xpos,ypos,length):
     
@@ -615,7 +652,7 @@ def click(xpos,ypos,length):
 
 
 def hitAllianceBuilding():
-    click(ALLIANCE_BUILDING[0], ALLIANCE_BUILDING[1], 0.25)
+    click(ALLIANCE_BUILDING[0], ALLIANCE_BUILDING[1], 0.5)
     return 0
 
 def minimizeGame():
@@ -638,19 +675,19 @@ def endGame():
     global RESTART_REQUIRED
     RESTART_REQUIRED = 1
 
-    time.sleep(2)
+    scalableSleep(2)
     openTasksList()
 
-    time.sleep(2)
+    scalableSleep(2)
     print("> Ending game.")
     pyautogui.press('F11')
-    time.sleep(2)
+    scalableSleep(2)
 
     loc = pyautogui.locateOnScreen('NOX_CLEARALL.png', confidence=0.6)
     locPoint = pyautogui.center(loc)
     click(locPoint[0], locPoint[1], 1)
 
-    time.sleep(2)
+    scalableSleep(2)
 
     
 def printExecutionTime():
@@ -797,10 +834,22 @@ def loadMeasurementsFromFile():
     global RES_MANA_WEIGHT
     global RES_GOLD_WEIGHT
 
+    global MODULE_ALLIANCE_BUILDING
+    global MODULE_TRAIN_TROOPS
+    global MODULE_HELP_ALLIANCE
+    global MODULE_SCOUT
+    global MODULE_GATHERING
+
     global CLICK_TIME_MULTIPLIER
 
     config = configparser.ConfigParser()
     config.read('config_bot.ini')
+
+    MODULE_ALLIANCE_BUILDING        = int(config['MODULES']['MODULE_ALLIANCE_BUILDING'])
+    MODULE_TRAIN_TROOPS             = int(config['MODULES']['MODULE_TRAIN_TROOPS'])
+    MODULE_SCOUT                    = int(config['MODULES']['MODULE_SCOUT'])
+    MODULE_HELP_ALLIANCE            = int(config['MODULES']['MODULE_HELP_ALLIANCE'])
+    MODULE_GATHERING                = int(config['MODULES']['MODULE_GATHERING'])
 
     CLICK_TIME_MULTIPLIER       = float(config['GENERAL']['CLICK_TIME_MULTIPLIER'])
 
