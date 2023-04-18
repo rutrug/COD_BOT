@@ -223,9 +223,10 @@ def tryHelpAlliance():
 def trainTroops():
 
     handleTrainingInBuilding("Swordsmen", SWORDSMAN_CAMP[0], SWORDSMAN_CAMP[1], "COD_SWORDSMEN_TRAIN.png")
-    handleTrainingInBuilding("Knights", KNIGHT_CAMP[0], KNIGHT_CAMP[1],"COD_KNIGHT_TRAIN.png", 1)
+    handleTrainingInBuilding("Knights", KNIGHT_CAMP[0], KNIGHT_CAMP[1],"COD_KNIGHT_TRAIN.png")
     handleTrainingInBuilding("Vestals", ABBEY[0], ABBEY[1],"COD_ABBEY_TRAIN.png")
     handleTrainingInBuilding("Ballistas", BALLISTA_FACTORY[0], BALLISTA_FACTORY[1],"COD_BALLISTA_TRAIN.png")
+    handleTrainingInBuilding("Celestials", CELESTIAL_TEMPLE[0], CELESTIAL_TEMPLE[1], "COD_CELESTIAL_TEMPLE.png")
 
     return 0
 
@@ -681,8 +682,6 @@ def endGame():
     scalableSleep(2)
     print("> Ending game.")
 
-
-
     loc = pyautogui.locateOnScreen('NOX_CLEARALL.png', confidence=0.6)
     locPoint = pyautogui.center(loc)
     click(locPoint[0], locPoint[1], 1)
@@ -814,6 +813,7 @@ def loadMeasurementsFromFile():
     global KNIGHT_CAMP
     global BALLISTA_FACTORY
     global ABBEY
+    global CELESTIAL_TEMPLE
     global TRAIN_OFFSET
     global SAFE_CITY_GOBACK
 
@@ -871,6 +871,7 @@ def loadMeasurementsFromFile():
     KNIGHT_CAMP                 = strintToTouple(config['GENERAL']['KNIGHT_CAMP'])
     BALLISTA_FACTORY            = strintToTouple(config['GENERAL']['BALLISTA_FACTORY'])
     ABBEY                       = strintToTouple(config['GENERAL']['ABBEY'])
+    CELESTIAL_TEMPLE            = strintToTouple(config['GENERAL']['CELESTIAL_TEMPLE'])
     TRAIN_OFFSET                = strintToTouple(config['GENERAL']['TRAIN_OFFSET'])
     SAFE_CITY_GOBACK            = strintToTouple(config['GENERAL']['SAFE_CITY_GOBACK'])
 
