@@ -680,13 +680,15 @@ def endGame():
 
     scalableSleep(2)
     print("> Ending game.")
-    pyautogui.press('F11')
-    scalableSleep(2)
+
+
 
     loc = pyautogui.locateOnScreen('NOX_CLEARALL.png', confidence=0.6)
     locPoint = pyautogui.center(loc)
     click(locPoint[0], locPoint[1], 1)
 
+    scalableSleep(1)
+    pyautogui.press('F11')
     scalableSleep(2)
 
     
