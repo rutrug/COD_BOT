@@ -93,11 +93,11 @@ def launchGame():
     EXECUTION_START = datetime.datetime.now()
 
     os.startfile(CUSTOM_GAME_PATH)
-    time.sleep(2)
+    scalableSleep(3)
 
     pyautogui.press('F11')
 
-    time.sleep(CUSTOM_LAUNCH_SLEEPTIME)
+    scalableSleep(CUSTOM_LAUNCH_SLEEPTIME)
 
     while 1:
         try:
@@ -107,7 +107,7 @@ def launchGame():
         except pyautogui.ImageNotFoundException:
             break
 
-    time.sleep(6)
+    scalableSleep(5)
 
 def doWork():
     global MODULE_ALLIANCE_BUILDING
@@ -115,13 +115,20 @@ def doWork():
     global MODULE_HELP_ALLIANCE
     global MODULE_SCOUT
     global MODULE_GATHERING
+    global MODULE_PVE_FARM
 
     err = 0
     err += areWeInCity()
 
+
     if err <= 0 and MODULE_ALLIANCE_BUILDING == 1:
         err += hitAllianceBuilding()
         print(getCurrentTimestamp() + " > Done hitting help on alliance buildiung. Error: " + str(err))
+        err += areWeInCity()
+
+    if err <= 0 and MODULE_PVE_FARM == 1:
+        err += farmMonsters()
+        print(getCurrentTimestamp() + " > Done farming monsters. Error: " + str(err))
         err += areWeInCity()
 
     if err <= 0 and MODULE_TRAIN_TROOPS == 1:
@@ -150,6 +157,68 @@ def doWork():
         return 0
 
     return 1
+
+def farmMonsters():
+
+    click(CITY_BUTTON[0], CITY_BUTTON[1], 1)
+
+    isHeroFree = 0
+    while 1:
+
+        while isHeroFree == 0:
+            scalableSleep(3)
+            # TODO : add timer to have failsafe
+            try:
+                loc = pyautogui.locateOnScreen("COD_PVE_HERO.png", confidence=0.5)
+            except pyautogui.ImageNotFoundException:
+                isHeroFree = 1
+
+        click(SEARCH_BUTTON[0], SEARCH_BUTTON[1], 1)
+        click(DARKLING_LEGION[0], DARKLING_LEGION[1], 1)
+        click(PVE_DIFFICULTY[0], PVE_DIFFICULTY[1], 1)
+
+        try:
+            loc = pyautogui.locateOnScreen("COD_BUTTON_SEARCH_PVE.png", confidence=0.75)
+            locPoint = pyautogui.center(loc)
+            click(locPoint[0], locPoint[1], 0.7)
+        except pyautogui.ImageNotFoundException:
+            return 1
+            scalableSleep(0)
+
+        click(CENTER_OF_SCREEN[0], CENTER_OF_SCREEN[1], 1)
+
+        try:
+            loc = pyautogui.locateOnScreen("COD_ATTACK.png", confidence=0.75)
+            locPoint = pyautogui.center(loc)
+            click(locPoint[0], locPoint[1], 1)
+        except pyautogui.ImageNotFoundException:
+            click(CITY_BUTTON[0], CITY_BUTTON[1], 1)
+            return 0
+
+        try:
+            loc = pyautogui.locateOnScreen("COD_CREATE_LEGION.png", confidence=0.75)
+            locPoint = pyautogui.center(loc)
+            click(locPoint[0], locPoint[1], 1)
+        except pyautogui.ImageNotFoundException:
+            click(CITY_BUTTON[0], CITY_BUTTON[1], 1)
+            click(CITY_BUTTON[0], CITY_BUTTON[1], 1)
+            return 0
+
+        click(MARCH_5_PRESET[0], MARCH_5_PRESET[1], 1)
+
+        try:
+            loc = pyautogui.locateOnScreen("COD_MARCH2.png", confidence=0.75)
+            locPoint = pyautogui.center(loc)
+            click(locPoint[0], locPoint[1], 1)
+
+            click(CITY_BUTTON[0], CITY_BUTTON[1], 1)
+            click(CITY_BUTTON[0], CITY_BUTTON[1], 1)
+
+        except pyautogui.ImageNotFoundException:
+            return 1
+            scalableSleep(0)
+
+        isHeroFree = 0
 
 def tryHelpAlliance():
 
@@ -253,7 +322,7 @@ def handleTrainingInBuilding(name, posX, posY, buildingTrain, lockBuildTier = -1
         maxTier = 5
 
         if lockBuildTier < 0:
-            while activeTier < maxTier:
+            while activeTier < maxTier and activeTier <= 1: # TODO: change activeTier limit to go above tier 2, TODO: make this a config??
                 xOffset = (maxTier - activeTier) * TRAIN_OFFSET[0]
                 click(TIER5_UNIT_POS[0] - xOffset, TIER5_UNIT_POS[1], 0.1)
 
@@ -286,7 +355,7 @@ def handleTrainingInBuilding(name, posX, posY, buildingTrain, lockBuildTier = -1
         # now train highest tier
 
         if lockBuildTier < 0:
-            tierCounter = 0
+            tierCounter = 3 # TODO: Change this if you want go above tier 2, perhaps make this as some config
             while tierCounter < maxTier:
                 xOffset = TRAIN_OFFSET[0] * tierCounter
                 click(TIER5_UNIT_POS[0] - xOffset, TIER5_UNIT_POS[1], 0.1)
@@ -809,6 +878,9 @@ def loadMeasurementsFromFile():
     global LOGGINGCAMP
     global OREDEPO
 
+    global DARKLING_LEGION
+    global PVE_DIFFICULTY
+
     global SWORDSMAN_CAMP
     global KNIGHT_CAMP
     global BALLISTA_FACTORY
@@ -824,6 +896,7 @@ def loadMeasurementsFromFile():
     global MARCH_2_PRESET
     global MARCH_3_PRESET
     global MARCH_4_PRESET
+    global MARCH_5_PRESET
 
     global TIER5_UNIT_POS
 
@@ -841,6 +914,7 @@ def loadMeasurementsFromFile():
     global MODULE_HELP_ALLIANCE
     global MODULE_SCOUT
     global MODULE_GATHERING
+    global MODULE_PVE_FARM
 
     global CLICK_TIME_MULTIPLIER
 
@@ -852,6 +926,7 @@ def loadMeasurementsFromFile():
     MODULE_SCOUT                    = int(config['MODULES']['MODULE_SCOUT'])
     MODULE_HELP_ALLIANCE            = int(config['MODULES']['MODULE_HELP_ALLIANCE'])
     MODULE_GATHERING                = int(config['MODULES']['MODULE_GATHERING'])
+    MODULE_PVE_FARM                 = int(config['MODULES']['MODULE_PVE_FARM'])
 
     CLICK_TIME_MULTIPLIER       = float(config['GENERAL']['CLICK_TIME_MULTIPLIER'])
 
@@ -883,10 +958,14 @@ def loadMeasurementsFromFile():
     OREDEPO                   = strintToTouple(config['GENERAL']['STONEDEPO'])
     MANADEPO                    = strintToTouple(config['GENERAL']['GOLDDEPO'])
 
+    DARKLING_LEGION             = strintToTouple(config['GENERAL']['DARKLING_LEGION'])
+    PVE_DIFFICULTY              = strintToTouple(config['GENERAL']['PVE_DIFFICULTY'])
+
     MARCH_1_PRESET              = strintToTouple(config['GENERAL']['MARCH_1_PRESET'])
     MARCH_2_PRESET              = strintToTouple(config['GENERAL']['MARCH_2_PRESET'])
     MARCH_3_PRESET              = strintToTouple(config['GENERAL']['MARCH_3_PRESET'])
     MARCH_4_PRESET              = strintToTouple(config['GENERAL']['MARCH_4_PRESET'])
+    MARCH_5_PRESET              = strintToTouple(config['GENERAL']['MARCH_5_PRESET'])
 
     ALLIANCE_BUTTON             = strintToTouple(config['GENERAL']['ALLIANCE_BUTTON'])
     TERRITORY_BUTTON            = strintToTouple(config['GENERAL']['TERRITORY_BUTTON'])
