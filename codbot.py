@@ -751,9 +751,17 @@ def endGame():
     scalableSleep(2)
     print("> Ending game.")
 
-    loc = pyautogui.locateOnScreen('NOX_CLEARALL.png', confidence=0.6)
-    locPoint = pyautogui.center(loc)
-    click(locPoint[0], locPoint[1], 1)
+
+    try:
+        loc = pyautogui.locateOnScreen('NOX_CLEARALL.png', confidence=0.6)
+        locPoint = pyautogui.center(loc)
+        click(locPoint[0], locPoint[1], 1)
+    except pyautogui.ImageNotFoundException:
+        pyautogui.press('F11')
+        scalableSleep(1)
+        loc = pyautogui.locateOnScreen('NOX_CLEARALL.png', confidence=0.6)
+        locPoint = pyautogui.center(loc)
+        click(locPoint[0], locPoint[1], 1)
 
     scalableSleep(1)
     pyautogui.press('F11')
