@@ -6,7 +6,7 @@ import datetime
 import random
 import traceback
 import logging
-import telegram
+#import telegram
 from termcolor import colored
 from enum import Enum
 
@@ -19,8 +19,8 @@ class Resource(Enum):
 
 pyautogui.useImageNotFoundException()
 
-api_key = '5523515228:AAEAh9CCIGHEi71jT_W74ViN95tAyl3VZyE'
-bot = telegram.Bot(token=api_key)
+#api_key = '5523515228:AAEAh9CCIGHEi71jT_W74ViN95tAyl3VZyE'
+#bot = telegram.Bot(token=api_key)
 
 END_STATE = 0
 RESTART_REQUIRED = 0
